@@ -1,12 +1,41 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/ui/logo";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { login, isAuthenticated } from "@/utils/auth";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      setError("Please enter your credentials.");
+      return;
+    }
+    login();
+    // After mock login, redirect to intended page or dashboard.
+    const redirectPath = location.state?.from?.pathname || "/dashboard";
+    navigate(redirectPath, { replace: true });
+  };
+
+  // If user is already authenticated, redirect to dashboard
+  if (isAuthenticated()) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-sm w-full">
@@ -23,10 +52,11 @@ const Login = () => {
               Enter your university credentials to continue
             </CardDescription>
           </CardHeader>
+          <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email or Student ID</Label>
-              <Input id="email" placeholder="student@university.edu" />
+              <Input id="email" value={form.email} onChange={handleChange} placeholder="student@university.edu" />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -35,11 +65,12 @@ const Login = () => {
                   Forgot password?
                 </Link>
               </div>
-              <Input id="password" type="password" />
+              <Input id="password" type="password" value={form.password} onChange={handleChange}/>
             </div>
+            {error && <p className="text-red-600 text-sm">{error}</p>}
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button className="w-full bg-maroon-700 hover:bg-maroon-800">Sign In</Button>
+            <Button className="w-full bg-maroon-700 hover:bg-maroon-800" type="submit">Sign In</Button>
             <p className="mt-4 text-center text-sm">
               Don't have an account?{" "}
               <Link to="/register" className="text-blue-600 hover:underline">
@@ -47,6 +78,7 @@ const Login = () => {
               </Link>
             </p>
           </CardFooter>
+          </form>
         </Card>
       </div>
     </div>
