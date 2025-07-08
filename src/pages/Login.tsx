@@ -13,12 +13,19 @@ const Login = () => {
   const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fix React Router warning by moving navigation to useEffect
   useEffect(() => {
-    if (isAuthenticated()) {
-      navigate("/dashboard", { replace: true });
-    }
+    // Check authentication status and redirect if needed
+    const checkAuth = () => {
+      if (isAuthenticated()) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
   }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,9 +44,16 @@ const Login = () => {
     navigate(redirectPath, { replace: true });
   };
 
-  // Don't render if already authenticated (will redirect in useEffect)
-  if (isAuthenticated()) {
-    return null;
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-maroon-700 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -59,31 +73,44 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email or Student ID</Label>
-              <Input id="email" value={form.email} onChange={handleChange} placeholder="student@university.edu" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
-                  Forgot password?
-                </Link>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email or Student ID</Label>
+                <Input 
+                  id="email" 
+                  value={form.email} 
+                  onChange={handleChange} 
+                  placeholder="student@university.edu" 
+                  type="email"
+                />
               </div>
-              <Input id="password" type="password" value={form.password} onChange={handleChange}/>
-            </div>
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-          </CardContent>
-          <CardFooter className="flex flex-col">
-            <Button className="w-full bg-maroon-700 hover:bg-maroon-800" type="submit">Sign In</Button>
-            <p className="mt-4 text-center text-sm">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-blue-600 hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </CardFooter>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={form.password} 
+                  onChange={handleChange}
+                />
+              </div>
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+            </CardContent>
+            <CardFooter className="flex flex-col">
+              <Button className="w-full bg-maroon-700 hover:bg-maroon-800" type="submit">
+                Sign In
+              </Button>
+              <p className="mt-4 text-center text-sm">
+                Don't have an account?{" "}
+                <Link to="/register" className="text-blue-600 hover:underline">
+                  Sign up
+                </Link>
+              </p>
+            </CardFooter>
           </form>
         </Card>
       </div>
