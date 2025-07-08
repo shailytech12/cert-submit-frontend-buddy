@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/ui/logo";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { login, isAuthenticated } from "@/utils/auth";
+import { login, signUp, getSession } from "@/utils/auth";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,34 +16,78 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Check authentication status and redirect if needed
-    const checkAuth = () => {
-      if (isAuthenticated()) {
-        navigate("/dashboard", { replace: true });
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event, session);
+        setSession(session);
+        
+        if (session) {
+          // User is authenticated, redirect to dashboard
+          const redirectPath = location.state?.from?.pathname || "/dashboard";
+          navigate(redirectPath, { replace: true });
+        }
+      }
+    );
+
+    // THEN check for existing session
+    getSession().then((session) => {
+      setSession(session);
+      if (session) {
+        const redirectPath = location.state?.from?.pathname || "/dashboard";
+        navigate(redirectPath, { replace: true });
       } else {
         setIsLoading(false);
       }
-    };
+    });
 
-    checkAuth();
-  }, [navigate]);
+    return () => subscription.unsubscribe();
+  }, [navigate, location.state]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    
     if (!form.email || !form.password) {
-      setError("Please enter your credentials.");
+      setError("Please enter your email and password.");
       return;
     }
-    login();
-    // After mock login, redirect to intended page or dashboard.
-    const redirectPath = location.state?.from?.pathname || "/dashboard";
-    navigate(redirectPath, { replace: true });
+
+    try {
+      if (isSignUp) {
+        const { data, error } = await signUp(form.email, form.password);
+        if (error) {
+          if (error.message.includes("already registered")) {
+            setError("This email is already registered. Try signing in instead.");
+          } else {
+            setError(error.message);
+          }
+        } else if (data.user && !data.session) {
+          setError("Please check your email to confirm your account before signing in.");
+        }
+      } else {
+        const { data, error } = await login(form.email, form.password);
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            setError("Invalid email or password. Please try again.");
+          } else {
+            setError(error.message);
+          }
+        }
+        // Success is handled by the auth state listener
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error('Auth error:', err);
+    }
   };
 
   // Show loading state while checking authentication
@@ -61,54 +107,77 @@ const Login = () => {
       <div className="max-w-sm w-full">
         <div className="mb-8 text-center">
           <Logo className="mx-auto mb-6" />
-          <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="text-muted-foreground">Sign in to your account</p>
+          <h1 className="text-2xl font-bold">
+            {isSignUp ? "Create Account" : "Welcome back"}
+          </h1>
+          <p className="text-muted-foreground">
+            {isSignUp ? "Sign up for your account" : "Sign in to your account"}
+          </p>
         </div>
         
         <Card>
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
+            <CardTitle>{isSignUp ? "Sign Up" : "Sign In"}</CardTitle>
             <CardDescription>
-              Enter your university credentials to continue
+              {isSignUp 
+                ? "Create your university account to get started" 
+                : "Enter your university credentials to continue"
+              }
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email or Student ID</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email" 
                   value={form.email} 
                   onChange={handleChange} 
                   placeholder="student@university.edu" 
                   type="email"
+                  required
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
-                    Forgot password?
-                  </Link>
+                  {!isSignUp && (
+                    <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                      Forgot password?
+                    </Link>
+                  )}
                 </div>
                 <Input 
                   id="password" 
                   type="password" 
                   value={form.password} 
                   onChange={handleChange}
+                  placeholder={isSignUp ? "Create a strong password" : "Enter your password"}
+                  required
                 />
               </div>
-              {error && <p className="text-red-600 text-sm">{error}</p>}
+              {error && (
+                <div className="text-red-600 text-sm bg-red-50 p-3 rounded border">
+                  {error}
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex flex-col">
               <Button className="w-full bg-maroon-700 hover:bg-maroon-800" type="submit">
-                Sign In
+                {isSignUp ? "Create Account" : "Sign In"}
               </Button>
               <p className="mt-4 text-center text-sm">
-                Don't have an account?{" "}
-                <Link to="/register" className="text-blue-600 hover:underline">
-                  Sign up
-                </Link>
+                {isSignUp ? "Already have an account? " : "Don't have an account? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setError("");
+                  }}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  {isSignUp ? "Sign in" : "Sign up"}
+                </button>
               </p>
             </CardFooter>
           </form>
