@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,13 @@ const Login = () => {
   const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+
+  // Fix React Router warning by moving navigation to useEffect
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.id]: e.target.value });
@@ -30,9 +37,8 @@ const Login = () => {
     navigate(redirectPath, { replace: true });
   };
 
-  // If user is already authenticated, redirect to dashboard
+  // Don't render if already authenticated (will redirect in useEffect)
   if (isAuthenticated()) {
-    navigate("/dashboard", { replace: true });
     return null;
   }
 
