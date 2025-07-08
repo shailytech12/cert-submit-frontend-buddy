@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -6,26 +7,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Clock, AlertTriangle, MapPin, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getCertificateData } from "@/data/certificateData";
+import { Certificate } from "@/types/certificate";
 
 const Dashboard = () => {
-  // Mock data for certificates
-  const certificates = [
-    { id: 1, name: "Bonafide Certificate", status: "Completed", dueDate: "Submitted", priority: "low" },
-    { id: 2, name: "Examination Fee Receipt", status: "Pending", dueDate: "Apr 30, 2025", priority: "high" },
-    { id: 3, name: "Course Completion Certificate", status: "In Progress", dueDate: "May 15, 2025", priority: "medium" },
-    { id: 4, name: "Academic Transcript", status: "Not Started", dueDate: "Jun 10, 2025", priority: "medium" },
-  ];
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
 
-  // Mock data for upcoming deadlines
-  const deadlines = [
-    { id: 1, name: "Examination Fee Receipt", date: "Apr 30, 2025", daysLeft: 10 },
-    { id: 2, name: "Course Completion Certificate", date: "May 15, 2025", daysLeft: 25 },
-    { id: 3, name: "Academic Transcript", date: "Jun 10, 2025", daysLeft: 51 },
-  ];
+  useEffect(() => {
+    // Refresh certificate data when component mounts
+    setCertificates(getCertificateData());
+    
+    // Set up interval to refresh data periodically to reflect admin changes
+    const interval = setInterval(() => {
+      setCertificates([...getCertificateData()]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Mock data for upcoming deadlines - derived from certificates
+  const deadlines = certificates
+    .filter(cert => cert.status !== "Completed")
+    .map(cert => ({
+      id: cert.id,
+      name: cert.name,
+      date: cert.dueDate.includes("2025") ? cert.dueDate : "May 30, 2025",
+      daysLeft: Math.floor(Math.random() * 60) + 1 // Mock days calculation
+    }))
+    .slice(0, 3);
 
   // Calculate progress percentage
   const completedCount = certificates.filter(cert => cert.status === "Completed").length;
-  const progressPercentage = (completedCount / certificates.length) * 100;
+  const progressPercentage = certificates.length > 0 ? (completedCount / certificates.length) * 100 : 0;
 
   return (
     <div className="min-h-screen flex flex-col">
