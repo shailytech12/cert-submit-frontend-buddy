@@ -11,8 +11,11 @@ import Locations from "./pages/Locations";
 import Chatbot from "./pages/Chatbot";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +29,19 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          {/* Protected routes */}
+          
+          {/* Admin routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboard />
+              </AdminProtectedRoute>
+            }
+          />
+          
+          {/* Protected user routes */}
           <Route
             path="/dashboard"
             element={
