@@ -6,6 +6,7 @@ export const certificateData: Certificate[] = [
   { 
     id: 1, 
     name: "Bonafide Certificate", 
+    studentName: "Arjun Kumar",
     status: "Completed", 
     dueDate: "Submitted on Apr 10, 2025", 
     priority: "low",
@@ -17,6 +18,7 @@ export const certificateData: Certificate[] = [
   { 
     id: 2, 
     name: "Examination Fee Receipt", 
+    studentName: "Priya Sharma",
     status: "Pending", 
     dueDate: "Apr 30, 2025", 
     priority: "high",
@@ -26,6 +28,7 @@ export const certificateData: Certificate[] = [
   { 
     id: 3, 
     name: "Course Completion Certificate", 
+    studentName: "Rahul Patel",
     status: "In Progress", 
     dueDate: "May 15, 2025", 
     priority: "medium",
@@ -37,6 +40,7 @@ export const certificateData: Certificate[] = [
   { 
     id: 4, 
     name: "Academic Transcript", 
+    studentName: "Sneha Reddy",
     status: "Not Started", 
     dueDate: "Jun 10, 2025", 
     priority: "medium",
@@ -46,6 +50,7 @@ export const certificateData: Certificate[] = [
   { 
     id: 5, 
     name: "No Dues Certificate", 
+    studentName: "Vikram Singh",
     status: "Not Started", 
     dueDate: "Jun 15, 2025", 
     priority: "low",
@@ -55,11 +60,36 @@ export const certificateData: Certificate[] = [
   { 
     id: 6, 
     name: "Character Certificate", 
-    status: "Not Started", 
+    studentName: "Anita Gupta",
+    status: "Pending", 
     dueDate: "Jun 20, 2025", 
     priority: "low",
     description: "Attests to your character and conduct during your time at the university.",
     submissions: []
+  },
+  { 
+    id: 7, 
+    name: "Migration Certificate", 
+    studentName: "Kiran Joshi",
+    status: "In Progress", 
+    dueDate: "May 25, 2025", 
+    priority: "high",
+    description: "Required for students transferring to another institution.",
+    submissions: [
+      { date: "Apr 20, 2025", office: "Registrar Office", status: "Under Review" }
+    ]
+  },
+  { 
+    id: 8, 
+    name: "Degree Certificate", 
+    studentName: "Pooja Agarwal",
+    status: "Completed", 
+    dueDate: "Submitted on Mar 28, 2025", 
+    priority: "high",
+    description: "Official degree certificate upon course completion.",
+    submissions: [
+      { date: "Mar 28, 2025", office: "Academic Section", status: "Approved" }
+    ]
   },
 ];
 

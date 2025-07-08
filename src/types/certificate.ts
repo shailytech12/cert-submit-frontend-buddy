@@ -2,6 +2,7 @@
 export interface Certificate {
   id: number;
   name: string;
+  studentName: string;
   status: "Completed" | "Pending" | "In Progress" | "Not Started";
   dueDate: string;
   priority: "low" | "medium" | "high";

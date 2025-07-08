@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,13 @@ const AdminLogin = () => {
   const { toast } = useToast();
   const [form, setForm] = useState({ username: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fix React Router warning by moving navigation to useEffect
+  useEffect(() => {
+    if (isAdminAuthenticated()) {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.id]: e.target.value });
@@ -54,9 +61,8 @@ const AdminLogin = () => {
     setIsLoading(false);
   };
 
-  // If admin is already authenticated, redirect to admin dashboard
+  // Don't render if already authenticated (will redirect in useEffect)
   if (isAdminAuthenticated()) {
-    navigate("/admin/dashboard", { replace: true });
     return null;
   }
 
@@ -96,6 +102,11 @@ const AdminLogin = () => {
                   onChange={handleChange}
                   placeholder="Enter admin password"
                 />
+              </div>
+              <div className="text-xs text-muted-foreground bg-blue-50 p-3 rounded">
+                <strong>Demo Credentials:</strong><br />
+                Username: admin<br />
+                Password: admin123
               </div>
             </CardContent>
             <CardFooter>

@@ -126,6 +126,7 @@ const AdminDashboard = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Student Name</TableHead>
                   <TableHead>Certificate Name</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Priority</TableHead>
@@ -137,6 +138,9 @@ const AdminDashboard = () => {
                 {certificates.map((cert) => (
                   <TableRow key={cert.id}>
                     <TableCell className="font-medium">
+                      <div className="font-semibold text-blue-600">{cert.studentName}</div>
+                    </TableCell>
+                    <TableCell>
                       <div>
                         <div className="font-semibold">{cert.name}</div>
                         <div className="text-sm text-gray-500">{cert.description}</div>
